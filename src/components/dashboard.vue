@@ -14,13 +14,26 @@
 export default {
     data() {
     return {
-      metrics: [
-        { title: 'Production Status', value: 'Operational' },
-        { title: 'Machine Utilization', value: '85%' },
-        { title: 'Product Defect Rate', value: '3%' }
-      ]
+      metrics: []
     };
-  }
+  },
+  mounted() {
+    // Fetch the data from the backend API
+    fetch('http://localhost:3000/getMetricsData')
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.title === "Production Status") {
+            if (data.value === '1') {
+                data.value = "Operational";
+            }
+        }
+        this.metrics = data;
+
+      })
+      .catch((error) => {
+        console.error('Error fetching dashboard data:', error);
+      });
+  },
 }
 </script>
 

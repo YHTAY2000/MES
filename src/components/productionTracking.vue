@@ -5,22 +5,19 @@
       <!-- Production Record Form -->
       <div class="bg-white p-6 rounded-lg shadow-md mb-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">Add New Production Record</h3>
-        <form @submit.prevent="addRecord">
+        <form @submit.prevent="addRecord" class="text-gray-800">
           <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
             <input
-              v-model="newRecord.name"
+              v-model="newRecord.pname"
               type="text"
               placeholder="Product Name"
               class="border p-2 rounded-lg w-full text-gray-800"
               required
             />
-            <input
-              v-model="newRecord.status"
-              type="text"
-              placeholder="Status"
-              class="border p-2 rounded-lg w-full text-gray-800"
-              required
-            />
+            <select id="status" v-model="newRecord.status" class="border p-2 rounded-lg w-full text-gray-800" required>
+                <option value="Operational">Operational</option>
+                <option value="Non-Operational">Non-Operational</option>
+            </select>
             <input
               v-model="newRecord.quantity"
               type="number"
@@ -56,14 +53,14 @@
             </tr>
           </thead>
           <tbody class="text-gray-800 text-center">
-            <tr v-for="(record, index) in productionRecords" :key="index">
-              <td class="border p-2">{{ record.name }}</td>
+            <tr v-for="(record,index) in productionRecords" :key="index">
+              <td class="border p-2">{{ record.product_name }}</td>
               <td class="border p-2">{{ record.status }}</td>
               <td class="border p-2">{{ record.quantity }}</td>
               <td class="border p-2">{{ record.date }}</td>
               <td class="border p-2">
-                <button @click="editRecord(index)" class="text-blue-500">Edit</button>
-                <button @click="deleteRecord(index)" class="text-red-500 ml-2">Delete</button>
+                <button @click="editRecord(index,record.id)" class="text-blue-500">Edit</button>
+                <button @click="deleteRecord(record.id)" class="text-red-500 ml-2">Delete</button>
               </td>
             </tr>
           </tbody>
@@ -78,7 +75,7 @@
       return {
         productionRecords: [],
         newRecord: {
-          name: '',
+          pname: '',
           status: '',
           quantity: null,
           date: '',
@@ -87,30 +84,75 @@
         editIndex: null,
       };
     },
+    mounted() {
+        this.fetchRecords();
+    },
     methods: {
 
-      addRecord() {
-        if (this.isEditing) {
-          this.productionRecords.splice(this.editIndex, 1, { ...this.newRecord });
-          this.isEditing = false;
-          this.editIndex = null;
-        } else {
-          this.productionRecords.push({ ...this.newRecord });
-        }
+    fetchRecords() {
+        fetch('http://localhost:3000/getProductionRecords')
+        .then((response) => response.json())
+        .then((data) => {
+            if (data) {
+                this.productionRecords = data.map(record => ({
+                    ...record,
+                    date: record.date ? new Date(record.date).toLocaleDateString() : null,
+                }));
+            }
+        })
+        .catch((error) => {
+            console.error('Error fetching records:', error);
+        });
+    },
+    addRecord() {
+        const url = this.isEditing
+        ? `http://localhost:3000/updateProductRecord/${this.editIndex}`
+        : 'http://localhost:3000/addProductionRecord';
+    
+        fetch(url, {
+            method: this.isEditing ? 'PUT' : 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            pname: this.newRecord.pname,  
+            status: this.newRecord.status,
+            quantity: this.newRecord.quantity,
+            date: this.newRecord.date
+        })
+        })
+        .then(response => response.json())
+        .then(data => {
+        this.fetchRecords();
         this.resetForm();
-      },
+        })
+        .catch(error => console.error('Error adding record:', error));
+    },
+    editRecord(index,id) {
+        console.log(index);
+        console.log(id);
 
-      editRecord(index) {
-        this.newRecord = { ...this.productionRecords[index] };
+        this.newRecord = {
+            pname: this.productionRecords[index].product_name, 
+            ...this.productionRecords[index],
+            
+        };
         this.isEditing = true;
-        this.editIndex = index;
+        this.editIndex = id;
       },
-
       deleteRecord(index) {
-        this.productionRecords.splice(index, 1);
-      },
-
-      resetForm() {
+        const recordId = this.productionRecords[index].id;
+        fetch(`http://localhost:3000/deleteProductionRecord/${recordId}`, {
+            method: 'DELETE',
+        })
+            .then(() => {
+            this.productionRecords.splice(index, 1);  // Remove from local list after successful delete
+            })
+            .catch(error => {
+            console.error('Error deleting record:', error);
+            });
+    },
+    resetForm() {
         this.newRecord = {
           name: '',
           status: '',
@@ -123,6 +165,5 @@
   </script>
   
   <style scoped>
-  /* Add custom styles here if needed */
   </style>
   
