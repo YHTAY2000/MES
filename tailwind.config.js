@@ -6,7 +6,7 @@ export default {
   theme: {
     extend: {
       screens: {
-        'lg': '1024px', // adjust this breakpoint as needed
+        'lg': '1024px',
       },
     },
   },
