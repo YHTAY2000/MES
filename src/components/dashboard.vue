@@ -18,22 +18,21 @@ export default {
     };
   },
   mounted() {
-    // Fetch the data from the backend API
-    fetch('http://localhost:3000/getMetricsData')
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.title === "Production Status") {
-            if (data.value === '1') {
-                data.value = "Operational";
-            }
-        }
+    this.fetchData();
+  },
+  methods:{
+    async fetchData(){
+      try{ 
+        const response = await fetch('http://localhost:3000/getMetricsData')
+        const data = await response.json();
         this.metrics = data;
 
-      })
-      .catch((error) => {
-        console.error('Error fetching dashboard data:', error);
-      });
-  },
+      }catch (error){
+        console.error('Error fetching records:', error);
+        alert('Something went wrong. Please try again');
+      }
+    }
+  }
 }
 </script>
 

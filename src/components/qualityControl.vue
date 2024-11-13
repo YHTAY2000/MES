@@ -77,9 +77,9 @@ export default {
     this.fetchRecords();
   },
   methods: {
-    addInspection() {
+    async addInspection() {
       try{
-        fetch(`http://${this.apiUrl}/addInspection`, {
+        const response = await fetch(`${this.apiUrl}/addInspection`, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
@@ -91,48 +91,41 @@ export default {
             defect: this.newInspection.defect,
           })
         })
-        .then(response => response.json())
-        .then(data => {
+        const data = response.json()
+        if (data){
 
           alert(data.message);
-      
-        }).finally(()=>{
-          
           this.fetchRecords();
           this.newInspection.title = "";
           this.newInspection.date = "";
-
-        })
-        .catch(error => {
-
-          console.error('Error adding record:', error),
-          alert('There was an error adding the record. Please try again.');
-
-      });
+        }
       }catch (error){
-
-        alert('Something error, please contact to the adminstrator');
-
-      }
-
-        
+        console.error('Error adding record:', error),
+        alert('There was an error adding the record. Please try again.');
+      }  
     },
-    fetchRecords() {
-        fetch(`${this.apiUrl}/getInspectionData`)
-        .then((response) => response.json())
-        .then((data) => {
-            if (data) { 
-             this.inspections = data.data.map(record =>({
-              ...record,
-              date: record.date ? new Date(record.date).toLocaleDateString() : null,
-            }));
-          }
-        })
-        .catch((error) => {
-            console.error('Error fetching records:', error);
-            alert('Something error, please contact to the adminstrator');
+    async fetchRecords() {
 
-        });
+      try{
+        const response = await fetch(`${this.apiUrl}/getInspectionData`,{
+            method: 'GET',
+            headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        const data = await response.json();
+            if (data) { 
+              this.inspections = data.data.map(record =>({
+                ...record,
+                date: record.date ? new Date(record.date).toLocaleDateString() : null,
+              }));
+            }
+      }catch(error){
+
+          console.error('Error fetching records:', error);
+          alert('Something error, please contact to the adminstrator'); 
+
+      };
     },
     async changeStatus(id, status) {
       try{
@@ -227,7 +220,7 @@ export default {
         Date: inspection.date,
         Status: inspection.status,
         Defects: inspection.defect ? "Yes" : "No",
-        DefectDetails: inspection.defectDetails || "",
+        DefectDetails: inspection.defect_details || "",
       }));
 
       const csvHeader = "Title,Date,Status,Defects,DefectDetails\n";

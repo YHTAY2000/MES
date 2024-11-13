@@ -14,9 +14,21 @@
               class="border p-2 rounded-lg w-full text-gray-800"
               required
             />
+            <input
+              v-model="newRecord.batchNumber"
+              type="text"
+              placeholder="Batch Number"
+              class="border p-2 rounded-lg w-full text-gray-800"
+              required
+            />
             <select id="status" v-model="newRecord.status" class="border p-2 rounded-lg w-full text-gray-800" required>
-                <option value="Operational">Operational</option>
-                <option value="Non-Operational">Non-Operational</option>
+              <option value="" disabled selected>Choose Status</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="In-Progress">In-Progress</option>
+                <option value="In-Progress">Assembly</option>
+                <option value="In-Progress">Packaging</option>
+                <option value="Completed">Completed</option>
+                <option value="Shipped">Shipped</option>
             </select>
             <input
               v-model="newRecord.quantity"
@@ -79,6 +91,7 @@
         productionRecords: [],
         newRecord: {
           pname: '',
+          batchNumber: '',
           status: '',
           quantity: null,
           date: '',
@@ -112,56 +125,71 @@
         alert('Something went wrong. Please try again');
       }
     },
-    addRecord() {
+    editRecord(index,id) {
+      const inputDate = this.productionRecords[index].date;
+
+      this.newRecord = {
+          pname: this.productionRecords[index].product_name, 
+          ...this.productionRecords[index],
+          date: inputDate
+          ? (() => {
+              const [day, month, year] = inputDate.split('/');
+              return `${year}-${month}-${day}`;
+            })()
+          : null,
+      };
+      this.isEditing = true;
+      this.editIndex = id;
+    },
+    async addRecord() {
         const url = this.isEditing
         ? `${this.apiUrl}/updateProductRecord/${this.editIndex}`
-        : '${this.apiUrl}/addProductRecord';
+        : `${this.apiUrl}/addProductRecord`;
     
-        fetch(url, {
-            method: this.isEditing ? 'PUT' : 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            pname: this.newRecord.pname,  
-            status: this.newRecord.status,
-            quantity: this.newRecord.quantity,
-            date: this.newRecord.date
+    try{
+        const response = await fetch(url, {
+              method: this.isEditing ? 'PUT' : 'POST',
+              headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              pname: this.newRecord.pname,  
+              status: this.newRecord.status,
+              quantity: this.newRecord.quantity,
+              date: this.newRecord.date
+          })
         })
-        })
-        .then(response => response.json())
-        .then(data => {
+        const data = await response.json();
+
+        if (data){
+          alert(data.message);
         this.fetchRecords();
         this.resetForm();
-        })
-        .catch(error => console.error('Error adding record:', error));
+        }
+      }catch (error){
+        console.error('Error fetching records:', error);
+        alert('Something went wrong. Please try again');
+      }
     },
-    editRecord(index,id) {
-        const inputDate = this.productionRecords[index].date;
+    async deleteRecord(id) {
+      const confirmation = confirm("Are you sure to delete the date?");
+      if (confirmation){
+      try{
+        const response = await fetch(`${this.apiUrl}/deleteProductRecord/${id}`,{
+        method: 'DELETE',
 
-        this.newRecord = {
-            pname: this.productionRecords[index].product_name, 
-            ...this.productionRecords[index],
-            date: inputDate
-            ? (() => {
-                const [day, month, year] = inputDate.split('/');
-                return `${year}-${month}-${day}`;
-              })()
-            : null,
-        };
-        this.isEditing = true;
-        this.editIndex = id;
-      },
-      deleteRecord(id) {
-        fetch(`${this.apiUrl}/deleteProductRecord/${id}`, {
-            method: 'DELETE',
-        }).then(() => {
-          this.fetchRecords();
-
-            })
-            .catch(error => {
-            console.error('Error deleting record:', error);
-            });
+      })
+      const data = await response.json();
+      if (data){
+          alert(data.message);
+        this.fetchRecords();
+        }
+      }catch (error){
+        console.error('Error fetching records:', error);
+        alert('Something went wrong. Please try again');
+      }
+    }
+      
     },
     resetForm() {
         this.newRecord = {

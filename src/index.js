@@ -30,9 +30,9 @@ app.get('/getMetricsData', (req, res) => {
     connection.query(query1, (err, results) => {
         if (err) {
             res.status(500).send('Database query error');
-            return;
+            return res.status(500).json({ error: err.message });
         }
-        res.json(results);
+        res.status(201).json(results);
     });
 });
 
@@ -42,7 +42,7 @@ app.get('/getProductionRecords', (req, res) => {
     connection.query(query2, (err, results) => {
         if (err) {
             res.status(500).send('Database query error');
-            return;
+            return res.status(500).json({ error: err.message });
         }
         console.log(results);
         res.status(201).json(results);
@@ -85,7 +85,7 @@ app.put('/updateProductRecord/:id', (req, res) => {
 
         }
 
-        res.status(201).json({ message: 'Record added successfully', data: result });
+        res.status(201).json({ message: 'Record updated successfully', data: result });
     });
 });
 
