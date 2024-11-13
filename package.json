@@ -15,9 +15,12 @@
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "express": "^4.21.1",
+    "flowbite": "^2.5.2",
     "mysql": "^2.18.1",
     "mysql2": "^3.11.4",
+    "preline": "^2.5.1",
     "vue": "^3.5.12",
+    "vue-json-to-csv": "^1.1.8",
     "vue-router": "^4.4.5"
   },
   "devDependencies": {

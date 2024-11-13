@@ -1,10 +1,10 @@
 <template>
     <div class="flex-1 p-4 md:p-6 lg:p-8">
-      <h2 class="text-2xl font-bold text-gray-700 mb-6">Production Tracking</h2>
+      <h2 class="text-gray-700 text-2xl mb-6 font-bold ">Production Tracking</h2>
   
       <!-- Production Record Form -->
-      <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Add New Production Record</h3>
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h3 class="mb-4 font-semibold text-lg text-gray-800">Add New Production Record</h3>
         <form @submit.prevent="addRecord" class="text-gray-800">
           <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
             <input
@@ -42,7 +42,7 @@
       <!-- Production Records Table -->
       <div class="bg-white p-6 rounded-lg shadow-md">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">Production Records</h3>
-        <table class="w-full border-collapse">
+        <table v-if="productionRecords.length > 0" class="w-full border-collapse">
           <thead>
             <tr class="bg-gray-100 text-gray-800 border">
               <th class="">Product Name</th>
@@ -65,14 +65,17 @@
             </tr>
           </tbody>
         </table>
+        <p v-else class="text-gray-600">No inspections scheduled.</p>
       </div>
     </div>
   </template>
   
   <script>
   export default {
+
     data() {
       return {
+        apiUrl: 'http://localhost:3000',
         productionRecords: [],
         newRecord: {
           pname: '',
@@ -88,26 +91,31 @@
         this.fetchRecords();
     },
     methods: {
-
-    fetchRecords() {
-        fetch('http://localhost:3000/getProductionRecords')
-        .then((response) => response.json())
-        .then((data) => {
-            if (data) {
-                this.productionRecords = data.map(record => ({
-                    ...record,
-                    date: record.date ? new Date(record.date).toLocaleDateString() : null,
-                }));
-            }
-        })
-        .catch((error) => {
-            console.error('Error fetching records:', error);
+      async fetchRecords() {
+      try {
+        const response = await fetch(`${this.apiUrl}/getProductionRecords`,{
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
+        const data = await response.json();
+
+        if (data) {
+          this.productionRecords = data.map(record => ({
+            ...record,
+            date: record.date ? new Date(record.date).toLocaleDateString() : null,
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching records:', error);
+        alert('Something went wrong. Please try again');
+      }
     },
     addRecord() {
         const url = this.isEditing
-        ? `http://localhost:3000/updateProductRecord/${this.editIndex}`
-        : 'http://localhost:3000/addProductionRecord';
+        ? `${this.apiUrl}/updateProductRecord/${this.editIndex}`
+        : '${this.apiUrl}/addProductRecord';
     
         fetch(url, {
             method: this.isEditing ? 'PUT' : 'POST',
@@ -129,24 +137,27 @@
         .catch(error => console.error('Error adding record:', error));
     },
     editRecord(index,id) {
-        console.log(index);
-        console.log(id);
+        const inputDate = this.productionRecords[index].date;
 
         this.newRecord = {
             pname: this.productionRecords[index].product_name, 
             ...this.productionRecords[index],
-            
+            date: inputDate
+            ? (() => {
+                const [day, month, year] = inputDate.split('/');
+                return `${year}-${month}-${day}`;
+              })()
+            : null,
         };
         this.isEditing = true;
         this.editIndex = id;
       },
-      deleteRecord(index) {
-        const recordId = this.productionRecords[index].id;
-        fetch(`http://localhost:3000/deleteProductionRecord/${recordId}`, {
+      deleteRecord(id) {
+        fetch(`${this.apiUrl}/deleteProductRecord/${id}`, {
             method: 'DELETE',
-        })
-            .then(() => {
-            this.productionRecords.splice(index, 1);  // Remove from local list after successful delete
+        }).then(() => {
+          this.fetchRecords();
+
             })
             .catch(error => {
             console.error('Error deleting record:', error);
