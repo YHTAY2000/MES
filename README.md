@@ -7,7 +7,7 @@ My Application is developed using Vue, tailwind css, express.js, socket.io and m
 
 1. Download [XAMPP](https://www.apachefriends.org/download.html) and open it, then start the MySQL module.  
 2. Click the Admin button in the MySQL module. 
-3. Import the database file from the db directory, you may select from this directory(/vue-project/db)
+3. Import the database file from the db directory, you may select from this directory (/mes-main/db)
 
 ## Project Setup
 
