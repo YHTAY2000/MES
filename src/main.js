@@ -1,5 +1,4 @@
 import './assets/main.css'
-import 'flowbite';
 
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
@@ -18,6 +17,7 @@ const router = createRouter({
         { path: '/qc', component: QualityControl, meta: { title: 'Quality Check - Manufacturing System' } },
     ]
 });
+
 
 router.beforeEach((to, from, next) => {
   if (to.meta && to.meta.title) {

@@ -4,6 +4,7 @@ import cors from 'cors';
 import { Server } from 'socket.io';
 import { createServer } from 'node:http';
 
+
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -17,7 +18,7 @@ app.use(cors());
 
 app.use(express.json());
 
-
+//Using MySQL 
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -68,6 +69,8 @@ app.get('/getMetricsData', (req, res) => {
     });
 });
 
+
+//Production tracking module 
 app.get('/getProductionRecords', (req, res) => {
 
     const query2 = 'SELECT * FROM production';
@@ -138,6 +141,7 @@ app.delete('/deleteProductRecord/:id', (req, res) => {
         res.status(201).json({ message: 'Record added successfully' });
     });
 });
+///////////////////
 
 ///inspection module db
 app.get('/getInspectionData', async (req, res) => {
