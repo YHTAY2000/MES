@@ -70,7 +70,7 @@
         <h3 class="text-lg font-semibold text-gray-800 mb-4">Production Records</h3>
         <div class="mb-4">
           <div class="mb-4 flex justify-end">
-          <input type="text" v-model="searchQuery" class="border p-2 w-40 text-gray-800 rounded-lg " placeholder="Search by Product Name..."/>
+          <input type="text" v-model="searchQuery" class="border p-2 w-60 text-gray-800 rounded-lg " placeholder="Search by Product Name..."/>
           </div>
         </div>
         <table v-if="filteredRecords.length > 0" class="w-full border-collapse">

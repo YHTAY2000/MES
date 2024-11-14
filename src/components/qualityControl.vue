@@ -22,9 +22,9 @@
     </form>
 
     <div v-if="inspections.length > 0">
-      <table class="min-w-full text-center bg-white text-gray-500 shadow-md rounded">
+      <table class="text-center bg-white text-gray-500 rounded">
         <thead>
-          <tr class="bg-gray-200 text-gray-700 text-left">
+          <tr class="bg-gray-200 text-gray-700">
             <th class="py-3 px-4">Title</th>
             <th class="py-3 px-4">Date</th>
             <th class="py-3 px-4">Status</th>
@@ -45,7 +45,7 @@
             <td class="py-2 px-4">
               
               <button @click="changeStatus(inspection.id,  inspection.status === 'Scheduled' ? 'Completed' : 'Scheduled')" class="text-green-600 hover:underline">  {{ inspection.status === 'Scheduled' ? 'Complete' : 'Uncompleted' }}</button>
-              <button @click="flagDefect(inspection.id, inspection.defect_details, inspection.defect)" class="ml-4 text-yellow-600 hover:underline">{{inspection.defect ? 'Update Defect Details' : 'Flag Defect'}}</button>
+              <button @click="flagDefect(inspection.id, inspection.total_produced, inspection.total_defected, inspection.defect_details, inspection.defect)" class="text-yellow-600 ml-4  hover:underline">{{inspection.defect ? 'Update Defect Details' : 'Flag Defect'}}</button>
               <button @click="deleteRecord(inspection.id)" class="ml-4 text-red-600 hover:underline">Delete</button>
             </td>
           </tr>
@@ -55,7 +55,7 @@
     <p v-else class="text-gray-600">No inspections scheduled.</p>
 
     <!-- Export to CSV Button -->
-    <button @click="exportToCSV" class="mt-6 text-white px-4 py-2 bg-blue-500 hover:bg-blue-600">
+    <button @click="exportToCSV" class="bg-blue-500 mt-6 px-4 py-2  text-white  hover:bg-blue-600">
       Export to CSV
     </button>
   </div>
@@ -79,7 +79,7 @@ export default {
       },
     };
   },
-  mounted(){
+  created(){
     this.fetchRecords();
   },
   methods: {
@@ -100,7 +100,7 @@ export default {
         const data = response.json()
         if (data){
 
-          alert(data.message);
+          alert(data);
           this.fetchRecords();
           this.newInspection.title = "";
           this.newInspection.date = "";
@@ -156,18 +156,22 @@ export default {
       }
     
     },
-    async flagDefect(id, description, defectType) {
+    async flagDefect(id, totalProduce, totalDefects, description, defectType) {
 
       const isNum = (value) => !isNaN(value) && value.trim() !== '';
 
-      const getTotalProduced = defectType == 1 ? prompt("Edit total number of produce:") : prompt("Enter total number of produce:");
+      const getTotalProduced = defectType == 1 ? prompt("Edit total number of produce:", totalProduce) : prompt("Enter total number of produce:");
+      
+      if (getTotalProduced === null) return; 
 
       if (getTotalProduced !== null && (getTotalProduced === '' || !isNum(getTotalProduced))) {
         alert("Please enter a valid number for total produced.");
         return;
       }
 
-      const getTotalDefect = defectType == 1 ? prompt("Edit total number of defects:") : prompt("Enter total number of defects:");
+      const getTotalDefect = defectType == 1 ? prompt("Edit total number of defects:", totalDefects) : prompt("Enter total number of defects:");
+
+      if (getTotalDefect === null) return; 
 
       if (getTotalDefect !== null && (getTotalDefect === '' || !isNum(getTotalDefect))) {
         alert("Please enter a valid number for total defects.");
@@ -175,6 +179,8 @@ export default {
       }
 
       const getdescription = defectType == 1 ? prompt("Edit defect details:", description) : prompt("Enter defect details:");
+      
+
 
       if (getTotalProduced !== null && getTotalDefect !== null && getdescription !== null) {
         try{
@@ -237,10 +243,12 @@ export default {
         Date: inspection.date,
         Status: inspection.status,
         Defects: inspection.defect ? "Yes" : "No",
+        produce: inspection.total_produced,
+        defect: inspection.total_defected,
         DefectDetails: inspection.defect_details || "",
       }));
 
-      const csvHeader = "Title,Date,Status,Defects,DefectDetails\n";
+      const csvHeader = "Title,Date,Status,Defects,Total Produced, Total Defects, Defect Details\n";
       const csvData = csvContent.map((row) => Object.values(row).join(",")).join("\n");
 
       const blob = new Blob([csvHeader + csvData], { type: "text/csv" });

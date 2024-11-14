@@ -45,14 +45,26 @@ io.on('connection', (socket) => {
 
 
 app.get('/getMetricsData', (req, res) => {
-    const query1 = 'SELECT * FROM metrics';
+    const status = 'SELECT * FROM metrics WHERE title="Production Status"';
+    const defectRate = 'SELECT (SUM(total_defected) / SUM(total_produced)) * 100 AS defectRate FROM inspection';
 
-    connection.query(query1, (err, results) => {
+    connection.query(status, (err, productionStatus) => {
         if (err) {
-            res.status(500).send('Database query error');
+            console.error('Database query error:', err);
             return res.status(500).json({ error: err.message });
         }
-        res.status(201).json(results);
+
+        connection.query(defectRate, (err, defectResult) => {
+            if (err) {
+                console.error('Database query error:', err);
+                return res.status(500).json({ error: err.message });
+            }
+
+            res.json({
+                status: productionStatus[0].value,
+                defectRate: defectResult[0].defectRate,
+            });
+        });
     });
 });
 
@@ -104,7 +116,7 @@ app.put('/updateProductRecord/:id', (req, res) => {
 
         }
         io.emit('dataProductionUpdated');
-        res.status(201).json({ message: 'Record updated successfully'});
+        res.status(201).json({ message: 'Record updated successfully' });
     });
 });
 
@@ -123,7 +135,7 @@ app.delete('/deleteProductRecord/:id', (req, res) => {
 
         }
         io.emit('dataProductionUpdated');
-        res.status(201).json({ message: 'Record added successfully'});
+        res.status(201).json({ message: 'Record added successfully' });
     });
 });
 
@@ -157,7 +169,7 @@ app.post('/addInspection', (req, res) => {
 
         }
 
-        res.status(201).json({ message: 'Record added successfully'});
+        res.status(201).json({ message: 'Record added successfully' });
     });
 });
 
