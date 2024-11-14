@@ -1,9 +1,9 @@
 # MES Application
 
 This template should help get you to start my mes application.
+My Application is developed using Vue, tailwind css, express.js, socket.io and mySQL
 
 ## Database Setup
-
 
 1. Download [XAMPP](https://www.apachefriends.org/download.html) and open it, then start the MySQL module.  
 2. Click the Admin button in the MySQL module. 
