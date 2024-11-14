@@ -1,35 +1,25 @@
-# vue-project
+# MES Application
 
-This template should help get you started developing with Vue 3 in Vite.
+This template should help get you to start my mes application.
 
-## Recommended IDE Setup
+## Database Setup
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
+1. Download [XAMPP](https://code.visualstudio.com/) and open it, then start the MySQL module.  
+2. Click the Admin button in the MySQL module. 
+3. Import the database file from the db directory 
 
 ## Project Setup
 
+1. Go to the server.js, make sure your database setup is correct
+2. In the cors, change the localhost port to your current port.
+ 
+Run npm install
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
-
+Run npm install mysql2 
 ```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
+npm install mysql2 
 ```

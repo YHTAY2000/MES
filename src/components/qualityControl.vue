@@ -20,7 +20,10 @@
         Schedule
       </button>
     </form>
-
+    <button @click="exportToCSV" class="bg-blue-500 mt-2 mb-3 px-4 py-2  text-white  hover:bg-blue-600">
+      Export to CSV
+    </button>
+    
     <div v-if="inspections.length > 0">
       <table class="text-center bg-white text-gray-500 rounded">
         <thead>
@@ -53,11 +56,7 @@
       </table>
     </div>
     <p v-else class="text-gray-600">No inspections scheduled.</p>
-
-    <!-- Export to CSV Button -->
-    <button @click="exportToCSV" class="bg-blue-500 mt-6 px-4 py-2  text-white  hover:bg-blue-600">
-      Export to CSV
-    </button>
+  
   </div>
 </template>
 
