@@ -1,8 +1,17 @@
 import express from 'express';
 import mysql from 'mysql2';
 import cors from 'cors';
+import { Server } from 'socket.io';
+import { createServer } from 'node:http';
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+    cors: {
+        origin: 'http://localhost:5173',
+    }
+});
+
 
 app.use(cors());
 
@@ -18,11 +27,22 @@ const connection = mysql.createConnection({
 
 connection.connect()
 
-connection.query('SELECT 1 + 1 AS solution', (err, rows, fields) => {
-    if (err) throw err
+httpServer.listen(3000, () => {
+    console.log('server running at http://localhost:3000');
+});
 
-    console.log('The solution is: ', rows[0].solution)
-})
+io.on('connection', (socket) => {
+    console.log('a user connected');
+
+    connection.query('SELECT * FROM production', (err, results) => {
+        if (err) {
+            console.error('Error fetching production records:', err);
+            return;
+        }
+        socket.emit('initialData', results);
+    });
+});
+
 
 app.get('/getMetricsData', (req, res) => {
     const query1 = 'SELECT * FROM metrics';
@@ -37,33 +57,32 @@ app.get('/getMetricsData', (req, res) => {
 });
 
 app.get('/getProductionRecords', (req, res) => {
-    
+
     const query2 = 'SELECT * FROM production';
     connection.query(query2, (err, results) => {
         if (err) {
             res.status(500).send('Database query error');
             return res.status(500).json({ error: err.message });
         }
-        console.log(results);
         res.status(201).json(results);
     });
 });
 
 app.post('/addProductRecord', (req, res) => {
 
-    const { pname, status, quantity, date } = req.body;
+    const { pname, batchNo, status, quantity, date } = req.body;
 
-    const query3 = `INSERT INTO production (product_name, status, quantity, date) VALUES (?, ?, ?, ?)`;
+    const query3 = `INSERT INTO production (product_name, batch_number, status, quantity, date) VALUES (?, ?, ?, ?, ?)`;
 
-    connection.query(query3, [pname, status, quantity, date], (err, result) => {
+    connection.query(query3, [pname, batchNo, status, quantity, date], (err, result) => {
 
         if (err) {
             res.status(500).send('Database query error');
-
             return res.status(500).json({ error: err.message });
 
         }
 
+        io.emit('dataProductionUpdated');
         res.status(201).json({ message: 'Record added successfully', data: result });
     });
 });
@@ -71,12 +90,12 @@ app.post('/addProductRecord', (req, res) => {
 app.put('/updateProductRecord/:id', (req, res) => {
 
     const { id } = req.params;
-    
-    const { pname, status, quantity, date } = req.body;
 
-    const query4 = 'UPDATE production SET product_name = ?, status = ?, quantity = ?, date = ? WHERE id = ?';
+    const { pname, batchNo, status, quantity, date } = req.body;
 
-    connection.query(query4, [pname, status, quantity, date, id], (err, result) => {
+    const query4 = 'UPDATE production SET product_name = ?, batch_number = ?, status = ?, quantity = ?, date = ? WHERE id = ?';
+
+    connection.query(query4, [pname, batchNo, status, quantity, date, id], (err, result) => {
 
         if (err) {
             res.status(500).send('Database query error');
@@ -84,15 +103,15 @@ app.put('/updateProductRecord/:id', (req, res) => {
             return res.status(500).json({ error: err.message });
 
         }
-
-        res.status(201).json({ message: 'Record updated successfully', data: result });
+        io.emit('dataProductionUpdated');
+        res.status(201).json({ message: 'Record updated successfully'});
     });
 });
 
 app.delete('/deleteProductRecord/:id', (req, res) => {
 
     const { id } = req.params;
-    
+
     const query5 = 'DELETE FROM production WHERE id = ?';
 
     connection.query(query5, [id], (err, result) => {
@@ -103,31 +122,30 @@ app.delete('/deleteProductRecord/:id', (req, res) => {
             return res.status(500).json({ error: err.message });
 
         }
-
-        res.status(201).json({ message: 'Record added successfully', data: result });
+        io.emit('dataProductionUpdated');
+        res.status(201).json({ message: 'Record added successfully'});
     });
 });
 
 ///inspection module db
 app.get('/getInspectionData', async (req, res) => {
 
-        const query2 = 'SELECT * FROM inspection';
-        
-        connection.query(query2, (err, results) => {
-            if (err) {
-                res.status(500).send('Database query error');
-                return res.status(500).json({ error: err.message });
-            }
-            res.status(201).json({ message: 'Record added successfully', data: results });
-        });
+    const query2 = 'SELECT * FROM inspection';
+
+    connection.query(query2, (err, results) => {
+        if (err) {
+            res.status(500).send('Database query error');
+            return res.status(500).json({ error: err.message });
+        }
+        res.status(201).json({ message: 'Record added successfully', data: results });
+    });
 
 });
 
 app.post('/addInspection', (req, res) => {
 
-    const { title, date, status, defect} = req.body;
-    console.log(req.body);
-    
+    const { title, date, status, defect } = req.body;
+
     const query7 = 'INSERT INTO inspection (title, date, status, defect) VALUES (?,?,?,?)';
 
     connection.query(query7, [title, date, status, defect], (err, result) => {
@@ -139,18 +157,18 @@ app.post('/addInspection', (req, res) => {
 
         }
 
-        res.status(201).json({ message: 'Record added successfully', data: result });
+        res.status(201).json({ message: 'Record added successfully'});
     });
 });
 
 app.put('/changeStatusData/:id/:status', (req, res) => {
-    
+
     const { id, status } = req.params;
 
-    
+
     const query8 = 'UPDATE inspection SET status = ? WHERE id = ?';
 
-    connection.query(query8, [status,id], (err) => {
+    connection.query(query8, [status, id], (err) => {
 
         if (err) {
 
@@ -160,20 +178,20 @@ app.put('/changeStatusData/:id/:status', (req, res) => {
 
         }
 
-        res.status(201).json({ message: 'Data updated successfully'});
+        res.status(201).json({ message: 'Data updated successfully' });
     });
 });
 
 app.put('/addDefectDesc/:id', (req, res) => {
-    
+
     const { id } = req.params;
-    
-    const { desc } = req.body;
 
-    
-    const query9 = 'UPDATE inspection SET defect = 1, defect_details = ?, updated_at = NOW() WHERE id = ?';
+    const { produceNo, defectNo, desc } = req.body;
 
-    connection.query(query9, [desc, id], (err) => {
+
+    const query9 = 'UPDATE inspection SET defect = 1, total_produced = ?, total_defected = ?, defect_details = ?, updated_at = NOW() WHERE id = ?';
+
+    connection.query(query9, [produceNo, defectNo, desc, id], (err) => {
 
         if (err) {
 
@@ -183,14 +201,14 @@ app.put('/addDefectDesc/:id', (req, res) => {
 
         }
 
-        res.status(201).json({ message: 'Data Added successfully'});
+        res.status(201).json({ message: 'Data Added successfully' });
     });
 });
 
 app.delete('/deleteRecord/:id', (req, res) => {
 
     const { id } = req.params;
-    
+
     const query10 = 'DELETE FROM inspection WHERE id = ?';
 
     connection.query(query10, [id], (err) => {
@@ -202,11 +220,6 @@ app.delete('/deleteRecord/:id', (req, res) => {
 
         }
 
-        res.status(201).json({ message: 'Record deleted successfully'});
+        res.status(201).json({ message: 'Record deleted successfully' });
     });
-});
-
-
-app.listen(3000, () => {
-    console.log('Server running on port 3000');
 });

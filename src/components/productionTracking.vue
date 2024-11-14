@@ -1,12 +1,10 @@
 <template>
     <div class="flex-1 p-4 md:p-6 lg:p-8">
       <h2 class="text-gray-700 text-2xl mb-6 font-bold ">Production Tracking</h2>
-  
-      <!-- Production Record Form -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <h3 class="mb-4 font-semibold text-lg text-gray-800">Add New Production Record</h3>
         <form @submit.prevent="addRecord" class="text-gray-800">
-          <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-2 gap-5">
             <input
               v-model="newRecord.pname"
               type="text"
@@ -37,27 +35,49 @@
               class="border p-2 rounded-lg w-full text-gray-800"
               required
             />
-            <input
-              v-model="newRecord.date"
-              type="date"
-              placeholder="Production Date"
-              class="border p-2 rounded-lg w-full"
-              required
-            />
+            <div class="relative flex flex-col">
+              <div class="flex items-center mb-1">
+                <input
+                  id="date"
+                  v-model="newRecord.date"
+                  type="date"
+                  placeholder="Production Date"
+                  class="border p-2 rounded-lg w-full text-gray-800"
+                  required
+                />
+                <span
+                  class="relative ml-2 cursor-pointer text-gray-500"
+                  @mouseover="showTooltip = 'date'"
+                  @mouseleave="showTooltip = null"
+                >
+                  ℹ️
+                  <div
+                    v-if="showTooltip === 'date'"
+                    class="absolute top-0 left-3 p-1 w-40 z-10 bg-gray-700 text-white text-xs"
+                  >
+                    Select the date of production for this item.
+                  </div>
+                </span>
+              </div>
+            </div>
           </div>
           <button class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg" type="submit">
             Add Record
           </button>
         </form>
       </div>
-  
-      <!-- Production Records Table -->
       <div class="bg-white p-6 rounded-lg shadow-md">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">Production Records</h3>
-        <table v-if="productionRecords.length > 0" class="w-full border-collapse">
+        <div class="mb-4">
+          <div class="mb-4 flex justify-end">
+          <input type="text" v-model="searchQuery" class="border p-2 w-40 text-gray-800 rounded-lg " placeholder="Search by Product Name..."/>
+          </div>
+        </div>
+        <table v-if="filteredRecords.length > 0" class="w-full border-collapse">
           <thead>
             <tr class="bg-gray-100 text-gray-800 border">
               <th class="">Product Name</th>
+              <th class="">Batch No</th>
               <th class="">Status</th>
               <th class="">Quantity</th>
               <th class="">Date</th>
@@ -65,8 +85,9 @@
             </tr>
           </thead>
           <tbody class="text-gray-800 text-center">
-            <tr v-for="(record,index) in productionRecords" :key="index">
+            <tr v-for="(record,index) in filteredRecords" :key="index">
               <td class="border p-2">{{ record.product_name }}</td>
+              <td class="border p-2">{{ record.batch_number }}</td>
               <td class="border p-2">{{ record.status }}</td>
               <td class="border p-2">{{ record.quantity }}</td>
               <td class="border p-2">{{ record.date }}</td>
@@ -77,12 +98,14 @@
             </tr>
           </tbody>
         </table>
-        <p v-else class="text-gray-600">No inspections scheduled.</p>
+        <p v-else class="text-gray-600">No production data.</p>
       </div>
     </div>
   </template>
   
   <script>
+  import io from 'socket.io-client';
+
   export default {
 
     data() {
@@ -96,12 +119,39 @@
           quantity: null,
           date: '',
         },
+        showTooltip: null,
         isEditing: false,
         editIndex: null,
+        socket: null,
+        searchQuery: ''
+
       };
     },
-    mounted() {
-        this.fetchRecords();
+    created(){
+      this.socket = io('http://localhost:3000');
+
+        this.socket.on('initialData', (data) => {
+          if (data) {
+          this.productionRecords = data.map(record => ({
+            ...record,
+            date: record.date ? new Date(record.date).toLocaleDateString() : null,
+          }));
+        }});
+
+        this.socket.on('dataProductionUpdated', () => {
+          this.fetchRecords(); 
+        });
+    },
+    computed: {
+      filteredRecords() {
+        if (!this.searchQuery) {
+          return this.productionRecords;
+        }
+
+        return this.productionRecords.filter(record => {
+          return record.product_name.toLowerCase().includes(this.searchQuery.toLowerCase());
+        });
+      }
     },
     methods: {
       async fetchRecords() {
@@ -125,11 +175,13 @@
         alert('Something went wrong. Please try again');
       }
     },
+    
     editRecord(index,id) {
       const inputDate = this.productionRecords[index].date;
 
       this.newRecord = {
           pname: this.productionRecords[index].product_name, 
+          batchNumber: this.productionRecords[index].batch_number, 
           ...this.productionRecords[index],
           date: inputDate
           ? (() => {
@@ -154,6 +206,7 @@
           },
           body: JSON.stringify({
               pname: this.newRecord.pname,  
+              batchNo: this.newRecord.batchNumber,
               status: this.newRecord.status,
               quantity: this.newRecord.quantity,
               date: this.newRecord.date
@@ -163,7 +216,6 @@
 
         if (data){
           alert(data.message);
-        this.fetchRecords();
         this.resetForm();
         }
       }catch (error){
@@ -182,7 +234,6 @@
       const data = await response.json();
       if (data){
           alert(data.message);
-        this.fetchRecords();
         }
       }catch (error){
         console.error('Error fetching records:', error);
@@ -194,6 +245,7 @@
     resetForm() {
         this.newRecord = {
           name: '',
+          batchNumber: '',
           status: '',
           quantity: null,
           date: '',

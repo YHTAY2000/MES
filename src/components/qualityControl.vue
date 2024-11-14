@@ -29,6 +29,8 @@
             <th class="py-3 px-4">Date</th>
             <th class="py-3 px-4">Status</th>
             <th class="py-3 px-4">Defects</th>
+            <th class="py-3 px-4">Total Produced</th>
+            <th class="py-3 px-4">Total Defects</th>
             <th class="py-3 px-4">Actions</th>
           </tr>
         </thead>
@@ -38,6 +40,8 @@
             <td class="py-2 px-4">{{ inspection.date }}</td>
             <td class="py-2 px-4">{{ inspection.status }}</td>
             <td class="py-2 px-4">{{ inspection.defect ? "Yes" : "No" }}</td>
+            <td class="py-2 px-4">{{ inspection.total_produced === null ? "Empty" :inspection.total_produced }}</td>
+            <td class="py-2 px-4">{{ inspection.total_defected === null ? "Empty" : inspection.total_defected }}</td>
             <td class="py-2 px-4">
               
               <button @click="changeStatus(inspection.id,  inspection.status === 'Scheduled' ? 'Completed' : 'Scheduled')" class="text-green-600 hover:underline">  {{ inspection.status === 'Scheduled' ? 'Complete' : 'Uncompleted' }}</button>
@@ -69,6 +73,8 @@ export default {
         date: "",
         status: "Scheduled",
         defect: false,
+        totalProduced: "",
+        totalDefected: "",
         defectDetails: "",
       },
     };
@@ -152,41 +158,52 @@ export default {
     },
     async flagDefect(id, description, defectType) {
 
-      
-      const getdescription = defectType == 1 ? prompt("Enter defect details:",description) : prompt("Enter defect details:",) ;
-      
-      if (getdescription !== null){
+      const isNum = (value) => !isNaN(value) && value.trim() !== '';
 
-        if (getdescription == ''){
-            alert("Please enter your description");
-        }else{
-            try{
-            const response = await fetch(`${this.apiUrl}/addDefectDesc/${id}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                desc: getdescription,
-              })
-        
-            });
+      const getTotalProduced = defectType == 1 ? prompt("Edit total number of produce:") : prompt("Enter total number of produce:");
 
-            const result = await response.json();
-
-            if (result){
-              this.fetchRecords();
-              alert(result.message);
-
-            }
-        
-          } catch (error) {
-            console.error('Error fetching records:', error);
-            alert('Something went wrong.');
-          }
-        }
+      if (getTotalProduced !== null && (getTotalProduced === '' || !isNum(getTotalProduced))) {
+        alert("Please enter a valid number for total produced.");
+        return;
       }
 
+      const getTotalDefect = defectType == 1 ? prompt("Edit total number of defects:") : prompt("Enter total number of defects:");
+
+      if (getTotalDefect !== null && (getTotalDefect === '' || !isNum(getTotalDefect))) {
+        alert("Please enter a valid number for total defects.");
+        return;
+      }
+
+      const getdescription = defectType == 1 ? prompt("Edit defect details:", description) : prompt("Enter defect details:");
+
+      if (getTotalProduced !== null && getTotalDefect !== null && getdescription !== null) {
+        try{
+          const response = await fetch(`${this.apiUrl}/addDefectDesc/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              produceNo: getTotalProduced,
+              defectNo: getTotalDefect,
+              desc: getdescription,
+            })
+      
+          });
+
+          const result = await response.json();
+
+          if (result){
+            this.fetchRecords();
+            alert(result.message);
+
+          }
+      
+        } catch (error) {
+          console.error('Error fetching records:', error);
+          alert('Something went wrong.');
+        }
+      }
     },
     async deleteRecord(id) {
       const confirmation = confirm("Do you want to delete the records?");
