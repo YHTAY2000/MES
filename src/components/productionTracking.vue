@@ -1,5 +1,6 @@
 <template>
   <div class="flex-1 p-4 md:p-6 lg:p-8">
+    <Alert :showAlert="alertDisplay" :type="status"/>
     <h2 class="text-gray-700 text-2xl mb-6 font-bold ">Production Tracking</h2>
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
       <h3 class="mb-4 font-semibold text-lg text-gray-800">{{this.title}}</h3>
@@ -7,33 +8,33 @@
         <div class="grid grid-cols-2 md:grid-cols-2 gap-5">
           <div class="flex flex-col"> 
             <input v-model="newRecord.pname" type="text" placeholder="Product Name"
-            :class="{
-              'border-pink-500': isInvalidName,
-              'focus:outline-none': isInvalidName,
-            }"
-            class="border p-2 rounded-lg w-full text-gray-800"/>
+            :class="[
+              'border p-2 rounded-lg w-full text-gray-800', 
+              {'border-pink-500': isInvalidName, 'focus:outline-none': isInvalidName}
+            ]"
+            />
             <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidName}">
               Please enter the product name.
             </p>
           </div>
           <div class="flex flex-col"> 
             <input v-model="newRecord.batchNumber" type="text" placeholder="Batch Number"
-            :class="{
-              'border-pink-500': isInvalidNumber,
-              'focus:outline-none': isInvalidNumber,
-            }"
-              class="border p-2 rounded-lg w-full text-gray-800"/>
-              <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidNumber}">
-                Please enter the batch number.
-              </p>
-          </div>
+            :class="[
+              'border p-2 rounded-lg w-full text-gray-800', 
+              {'border-pink-500': isInvalidNumber, 'focus:outline-none': isInvalidNumber}
+            ]"
+            />
+            <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidNumber}">
+              Please enter the batch number.
+            </p>
+        </div>
           <div class="flex flex-col"> 
             <select id="status" v-model="newRecord.status" 
-            :class="{
-              'border-pink-500': isInvalidStatus,
-              'focus:outline-none': isInvalidStatus,
-            }"
-            class="border p-2 rounded-lg w-full text-gray-800" >
+            :class="[
+              'border p-2 rounded-lg w-full text-gray-800', 
+              {'border-pink-500': isInvalidStatus, 'focus:outline-none': isInvalidStatus}
+            ]"
+            >
               <option value="" disabled selected>Choose Status</option>
               <option value="Scheduled">Scheduled</option>
               <option value="In-Progress">In-Progress</option>
@@ -48,24 +49,24 @@
           </div>
           <div class="flex flex-col"> 
             <input v-model="newRecord.quantity" type="number" placeholder="Quantity"
-            :class="{
-                'border-pink-500': isInvalidQuantity,
-                'focus:outline-none': isInvalidQuantity,
-              }"
-              class="border p-2 rounded-lg w-full text-gray-800" />
-              <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidQuantity}">
-                Please enter the quantity number.
-              </p>
+            :class="[
+              'border p-2 rounded-lg w-full text-gray-800', 
+              {'border-pink-500': isInvalidQuantity, 'focus:outline-none': isInvalidQuantity}
+            ]"
+            />
+            <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidQuantity}">
+              Please enter the quantity number.
+            </p>
           </div>
           <div class="flex flex-col"> 
             <div class="relative flex flex-col">
               <div class="flex items-center mb-1">
                 <input id="date" v-model="newRecord.date" type="date" placeholder="Production Date"
-                  :class="{
-                    'border-pink-500': isInvalidDate,
-                    'focus:outline-none': isInvalidDate,
-                  }"
-                  class="border p-2 rounded-lg w-full text-gray-800"  />
+                :class="[
+                    'border p-2 rounded-lg w-full text-gray-800', 
+                    {'border-pink-500': isInvalidDate, 'focus:outline-none': isInvalidDate}
+                  ]"
+                 />
                 <span class="relative ml-2 cursor-pointer text-gray-500" @mouseover="showTooltip = 'date'"
                   @mouseleave="showTooltip = null">
                   ℹ️
@@ -126,13 +127,17 @@
 
 <script>
 import io from 'socket.io-client';
+import Alert from './alert.vue';
 
 export default {
-
+  components:{
+    Alert
+  },
   data() {
     return {
       apiUrl: 'http://localhost:3000',
-      
+      status: "success",
+      alertDisplay: false,
       title: "Add New Production Record",
       buttonName: "Add",
       productionRecords: [], 
@@ -174,12 +179,22 @@ export default {
     });
   },
   mounted() {
+  
     this.socket.on('dataProductionUpdated', () => {
       this.fetchRecords();
       this.resetForm();
       this.title="Add New Production Record";
       this.buttonName = "Add";
     });
+  },
+  watch:{
+    alertDisplay(type){
+      if (type){
+          setTimeout(() => {
+            this.alertDisplay = false
+          }, 5000);
+        }
+    }
   },
   computed: {
     filteredRecords() {
@@ -275,7 +290,7 @@ export default {
           return;
 
         } else {
-          alert(data.message);
+          this.alertDisplay = true;
         }
       } catch (error) {
         console.error('Error fetching records:', error);

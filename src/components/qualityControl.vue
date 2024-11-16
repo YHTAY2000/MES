@@ -158,12 +158,12 @@ export default {
           },
         })
         const data = await response.json();
-            if (data) { 
-              this.inspections = data.data.map(record =>({
-                ...record,
-                date: record.date ? new Date(record.date).toLocaleDateString() : null,
-              }));
-            }
+        if (data) { 
+          this.inspections = data.data.map(record =>({
+            ...record,
+            date: record.date ? new Date(record.date).toLocaleDateString() : null,
+          }));
+        }
       }catch(error){
 
           console.error('Error fetching records:', error);
