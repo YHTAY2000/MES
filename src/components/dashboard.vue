@@ -1,5 +1,9 @@
 <template>
   <div class="p-4 md:p-6 lg:p-8">
+    <div class="transition duration-150 ease-out hover:ease-in bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4" role="alert">
+      <p class="font-bold">Be Warned</p>
+      <p>Something not ideal might be happening.</p>
+    </div>
     <h2 class="text-2xl font-bold text-gray-700 mb-6">Manufacturing Dashboard</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div class="bg-blue-100 p-4 rounded-lg shadow-md text-center">

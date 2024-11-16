@@ -2,21 +2,37 @@
   <div class="p-4">
     <h2 class="text-2xl font-bold text-gray-700 mb-6">Quality Control</h2>
 
-    <form @submit.prevent="addInspection" class="mb-6 flex flex-col md:flex-row gap-4">
-      <input
-        v-model="newInspection.title"
-        type="text"
-        placeholder="Inspection Title"
-        class="border border-gray-300 p-2 w-full md:w-100 text-gray-500	"
-        required
-      />
-      <input
-        v-model="newInspection.date"
-        type="date"
-        class="border border-gray-300 p-2 text-gray-500	 rounded w-full md:w-100"
-        required
-      />
-      <button type="submit" class="bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
+    <form @submit.prevent="addInspection" class="mb-6 flex md:flex-row gap-4">
+      <div class="flex flex-col w-full">
+        <input
+          v-model="newInspection.title"
+          type="text"
+          placeholder="Inspection Title"
+          :class="{
+            'border-pink-500': isInvalidTitle,
+            'focus:outline-none': isInvalidTitle,
+          }"
+          class="border border-gray-300 p-2 w-full md:w-100 text-gray-500	"
+        />
+        <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidTitle}">
+          Please provide title name.
+        </p>
+      </div>
+      <div class="flex flex-col w-full">
+        <input
+          v-model="newInspection.date"
+          type="date"
+          :class="{
+            'border-pink-500': isInvalidDate,
+            'focus:outline-none': isInvalidDate,
+          }"
+          class="border border-gray-300 p-2 text-gray-500	 rounded w-full md:w-100"
+        />
+        <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidDate}">
+          Please select the date.
+        </p>
+      </div>
+      <button type="submit" class="bg-blue-500 px-4 py-2 h-10 text-white hover:bg-blue-600">
         Schedule
       </button>
     </form>
@@ -79,6 +95,8 @@ export default {
         defectDetails: "",
         socket: ""
       },
+      isInvalidTitle: false,
+      isInvalidDate: false,
     };
   },
   created(){
@@ -96,6 +114,13 @@ export default {
   },
   methods: {
     async addInspection() {
+      this.isInvalidTitle = !this.newInspection.title.trim();
+      this.isInvalidDate = !this.newInspection.date.trim();
+
+      if (this.isInvalidTitle || this.isInvalidDate) {
+        return;
+      }
+    
       try{
         const response = await fetch(`${this.apiUrl}/addInspection`, {
             method: 'POST',
@@ -109,11 +134,15 @@ export default {
             defect: this.newInspection.defect,
           })
         })
-        const data = response.json()
-        if (data.error) {
+        const result = response.json()
+        if (result.error) {
 
           alert(`Server error: ${data.error}`);
           return;
+        }else{
+          alert(result);
+          console.log(result);
+
         }
       }catch (error){
         console.error('Error adding record:', error),

@@ -153,7 +153,7 @@ app.get('/getInspectionData', async (req, res) => {
             res.status(500).send('Database query error');
             return res.status(500).json({ error: err.message });
         }
-        res.status(200).json({message: 'Record added successfully', data: results });
+        res.status(200);
     });
 
 });

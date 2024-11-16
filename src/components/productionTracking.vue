@@ -2,41 +2,87 @@
   <div class="flex-1 p-4 md:p-6 lg:p-8">
     <h2 class="text-gray-700 text-2xl mb-6 font-bold ">Production Tracking</h2>
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h3 class="mb-4 font-semibold text-lg text-gray-800">Add New Production Record</h3>
+      <h3 class="mb-4 font-semibold text-lg text-gray-800">{{this.title}}</h3>
       <form @submit.prevent="addRecord" class="text-gray-800">
         <div class="grid grid-cols-2 md:grid-cols-2 gap-5">
-          <input v-model="newRecord.pname" type="text" placeholder="Product Name"
-            class="border p-2 rounded-lg w-full text-gray-800" required />
-          <input v-model="newRecord.batchNumber" type="text" placeholder="Batch Number"
-            class="border p-2 rounded-lg w-full text-gray-800" required />
-          <select id="status" v-model="newRecord.status" class="border p-2 rounded-lg w-full text-gray-800" required>
-            <option value="" disabled selected>Choose Status</option>
-            <option value="Scheduled">Scheduled</option>
-            <option value="In-Progress">In-Progress</option>
-            <option value="In-Progress">Assembly</option>
-            <option value="In-Progress">Packaging</option>
-            <option value="Completed">Completed</option>
-            <option value="Shipped">Shipped</option>
-          </select>
-          <input v-model="newRecord.quantity" type="number" placeholder="Quantity"
-            class="border p-2 rounded-lg w-full text-gray-800" required />
-          <div class="relative flex flex-col">
-            <div class="flex items-center mb-1">
-              <input id="date" v-model="newRecord.date" type="date" placeholder="Production Date"
-                class="border p-2 rounded-lg w-full text-gray-800" required />
-              <span class="relative ml-2 cursor-pointer text-gray-500" @mouseover="showTooltip = 'date'"
-                @mouseleave="showTooltip = null">
-                ℹ️
-                <div v-if="showTooltip === 'date'"
-                  class="absolute top-0 left-3 p-1 w-40 z-10 bg-gray-700 text-white text-xs">
-                  Select the date of production for this item.
-                </div>
-              </span>
+          <div class="flex flex-col"> 
+            <input v-model="newRecord.pname" type="text" placeholder="Product Name"
+            :class="{
+              'border-pink-500': isInvalidName,
+              'focus:outline-none': isInvalidName,
+            }"
+            class="border p-2 rounded-lg w-full text-gray-800"/>
+            <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidName}">
+              Please enter the product name.
+            </p>
+          </div>
+          <div class="flex flex-col"> 
+            <input v-model="newRecord.batchNumber" type="text" placeholder="Batch Number"
+            :class="{
+              'border-pink-500': isInvalidNumber,
+              'focus:outline-none': isInvalidNumber,
+            }"
+              class="border p-2 rounded-lg w-full text-gray-800"/>
+              <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidNumber}">
+                Please enter the batch number.
+              </p>
+          </div>
+          <div class="flex flex-col"> 
+            <select id="status" v-model="newRecord.status" 
+            :class="{
+              'border-pink-500': isInvalidStatus,
+              'focus:outline-none': isInvalidStatus,
+            }"
+            class="border p-2 rounded-lg w-full text-gray-800" >
+              <option value="" disabled selected>Choose Status</option>
+              <option value="Scheduled">Scheduled</option>
+              <option value="In-Progress">In-Progress</option>
+              <option value="In-Progress">Assembly</option>
+              <option value="In-Progress">Packaging</option>
+              <option value="Completed">Completed</option>
+              <option value="Shipped">Shipped</option>
+            </select>
+            <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidStatus}">
+              Please select status.
+            </p>
+          </div>
+          <div class="flex flex-col"> 
+            <input v-model="newRecord.quantity" type="number" placeholder="Quantity"
+            :class="{
+                'border-pink-500': isInvalidQuantity,
+                'focus:outline-none': isInvalidQuantity,
+              }"
+              class="border p-2 rounded-lg w-full text-gray-800" />
+              <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidQuantity}">
+                Please enter the quantity number.
+              </p>
+          </div>
+          <div class="flex flex-col"> 
+            <div class="relative flex flex-col">
+              <div class="flex items-center mb-1">
+                <input id="date" v-model="newRecord.date" type="date" placeholder="Production Date"
+                  :class="{
+                    'border-pink-500': isInvalidDate,
+                    'focus:outline-none': isInvalidDate,
+                  }"
+                  class="border p-2 rounded-lg w-full text-gray-800"  />
+                <span class="relative ml-2 cursor-pointer text-gray-500" @mouseover="showTooltip = 'date'"
+                  @mouseleave="showTooltip = null">
+                  ℹ️
+                  <div v-if="showTooltip === 'date'"
+                    class="absolute top-0 left-3 p-1 w-40 z-10 bg-gray-700 text-white text-xs">
+                    Select the date of production for this item.
+                  </div>
+                </span>
+              </div>
             </div>
+            <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidDate}">
+                Please select date.
+              </p>
           </div>
         </div>
         <button class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg" type="submit">
-          Add Record
+          {{this.buttonName}}
         </button>
       </form>
     </div>
@@ -86,7 +132,20 @@ export default {
   data() {
     return {
       apiUrl: 'http://localhost:3000',
-      productionRecords: [],
+      
+      title: "Add New Production Record",
+      buttonName: "Add",
+      productionRecords: [], 
+      isInvalidName: false,
+      isInvalidNumber: false,
+      isInvalidStatus: false,
+      isInvalidQuantity: false,
+      isInvalidDate: false,
+      showTooltip: null,
+      isEditing: false,
+      editIndex: null,
+      socket: null,
+      searchQuery: "",
       newRecord: {
         pname: '',
         batchNumber: '',
@@ -94,11 +153,7 @@ export default {
         quantity: null,
         date: '',
       },
-      showTooltip: null,
-      isEditing: false,
-      editIndex: null,
-      socket: null,
-      searchQuery: ''
+     
 
     };
   },
@@ -122,7 +177,8 @@ export default {
     this.socket.on('dataProductionUpdated', () => {
       this.fetchRecords();
       this.resetForm();
-
+      this.title="Add New Production Record";
+      this.buttonName = "Add";
     });
   },
   computed: {
@@ -138,6 +194,7 @@ export default {
   },
   methods: {
     async fetchRecords() {
+  
       try {
         const response = await fetch(`${this.apiUrl}/getProductionRecords`, {
           method: 'GET',
@@ -163,7 +220,6 @@ export default {
         alert('The network connection is lost, please connect to the network!');
       }
     },
-
     editRecord(index, id) {
       const inputDate = this.productionRecords[index].date;
 
@@ -178,10 +234,22 @@ export default {
           })()
           : null,
       };
+      this.title = "Edit Production Record";
+      this.buttonName = "Save";
       this.isEditing = true;
       this.editIndex = id;
     },
     async addRecord() {
+      this.isInvalidName = !this.newRecord.pname.trim();
+      this.isInvalidNumber = !this.newRecord.batchNumber.trim();
+      this.isInvalidStatus = !this.newRecord.status.trim();
+      this.isInvalidQuantity = !this.newRecord.quantity;
+      this.isInvalidDate = !this.newRecord.date.trim();
+
+      if (this.isInvalidName || this.isInvalidNumber || this.isInvalidStatus || this.isInvalidQuantity || this.isInvalidDate){
+        return;
+      }
+
       const url = this.isEditing
         ? `${this.apiUrl}/updateProductRecord/${this.editIndex}`
         : `${this.apiUrl}/addProductRecord`;
