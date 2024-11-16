@@ -61,7 +61,7 @@ app.get('/getMetricsData', (req, res) => {
                 return res.status(500).json({ error: err.message });
             }
 
-            res.json({
+            res.status(200).json({
                 status: productionStatus[0].value,
                 defectRate: defectResult[0].defectRate,
             });
@@ -79,7 +79,7 @@ app.get('/getProductionRecords', (req, res) => {
             res.status(500).send('Database query error');
             return res.status(500).json({ error: err.message });
         }
-        res.status(201).json(results);
+        res.status(200).json(results);
     });
 });
 
@@ -98,7 +98,7 @@ app.post('/addProductRecord', (req, res) => {
         }
 
         io.emit('dataProductionUpdated');
-        res.status(201).json({ message: 'Record added successfully', data: result });
+        res.status(200).json({ message: 'Record added successfully', data: result });
     });
 });
 
@@ -119,7 +119,7 @@ app.put('/updateProductRecord/:id', (req, res) => {
 
         }
         io.emit('dataProductionUpdated');
-        res.status(201).json({ message: 'Record updated successfully' });
+        res.status(200).json({ message: 'Record updated successfully' });
     });
 });
 
@@ -138,7 +138,7 @@ app.delete('/deleteProductRecord/:id', (req, res) => {
 
         }
         io.emit('dataProductionUpdated');
-        res.status(201).json({ message: 'Record added successfully' });
+        res.status(200).json({ message: 'Record added successfully' });
     });
 });
 ///////////////////
@@ -153,7 +153,7 @@ app.get('/getInspectionData', async (req, res) => {
             res.status(500).send('Database query error');
             return res.status(500).json({ error: err.message });
         }
-        res.status(201).json({ message: 'Record added successfully', data: results });
+        res.status(200).json({message: 'Record added successfully', data: results });
     });
 
 });
@@ -172,8 +172,8 @@ app.post('/addInspection', (req, res) => {
             return res.status(500).json({ error: err.message });
 
         }
-
-        res.status(201).json({ message: 'Record added successfully' });
+        io.emit('updateInspectionData');
+        res.status(200).json({ message: 'Record added successfully',data: result });
     });
 });
 
@@ -193,8 +193,9 @@ app.put('/changeStatusData/:id/:status', (req, res) => {
             return res.status(500).json({ error: err.message });
 
         }
+        io.emit('updateInspectionData');
 
-        res.status(201).json({ message: 'Data updated successfully' });
+        res.status(200).json({ message: 'Data updated successfully' });
     });
 });
 
@@ -216,8 +217,9 @@ app.put('/addDefectDesc/:id', (req, res) => {
             return res.status(500).json({ error: err.message });
 
         }
+        io.emit('updateInspectionData');
 
-        res.status(201).json({ message: 'Data Added successfully' });
+        res.status(200).json({ message: 'Data Added successfully' });
     });
 });
 
@@ -235,7 +237,8 @@ app.delete('/deleteRecord/:id', (req, res) => {
             return res.status(500).json({ error: err.message });
 
         }
+        io.emit('updateInspectionData');
 
-        res.status(201).json({ message: 'Record deleted successfully' });
+        res.status(200).json({ message: 'Record deleted successfully' });
     });
 });

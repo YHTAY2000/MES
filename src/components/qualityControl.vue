@@ -61,6 +61,8 @@
 </template>
 
 <script>
+import io from 'socket.io-client';
+
 export default {
   name: "QualityControl",
   data() {
@@ -75,11 +77,22 @@ export default {
         totalProduced: "",
         totalDefected: "",
         defectDetails: "",
+        socket: ""
       },
     };
   },
   created(){
     this.fetchRecords();
+    this.socket = io('http://localhost:3000');
+
+  },
+  mounted(){
+
+    this.socket.on('updateInspectionData', () => {
+      this.fetchRecords();
+      this.resetForm();
+
+    });
   },
   methods: {
     async addInspection() {
@@ -97,20 +110,17 @@ export default {
           })
         })
         const data = response.json()
-        if (data){
+        if (data.error) {
 
-          alert(data);
-          this.fetchRecords();
-          this.newInspection.title = "";
-          this.newInspection.date = "";
+          alert(`Server error: ${data.error}`);
+          return;
         }
       }catch (error){
         console.error('Error adding record:', error),
-        alert('There was an error adding the record. Please try again.');
+        alert('The network connection is lost, please connect to the network!');
       }  
     },
     async fetchRecords() {
-
       try{
         const response = await fetch(`${this.apiUrl}/getInspectionData`,{
             method: 'GET',
@@ -128,7 +138,7 @@ export default {
       }catch(error){
 
           console.error('Error fetching records:', error);
-          alert('Something error, please contact to the adminstrator'); 
+          alert('The network connection is lost, please connect to the network!');
 
       };
     },
@@ -144,7 +154,6 @@ export default {
         const result = await response.json();
 
         if (result){
-          this.fetchRecords();
           alert(result.message);
 
         }
@@ -199,14 +208,13 @@ export default {
           const result = await response.json();
 
           if (result){
-            this.fetchRecords();
             alert(result.message);
 
           }
       
         } catch (error) {
           console.error('Error fetching records:', error);
-          alert('Something went wrong.');
+          alert('The network connection is lost, please connect to the network!');
         }
       }
     },
@@ -225,16 +233,19 @@ export default {
           const result = await response.json();
 
           if (result){
-            this.fetchRecords();
             alert(result.message);
 
           }
 
         } catch (error) {
           console.error('Error fetching records:', error);
-          alert('Something went wrong. Please try again later');
+          alert('The network connection is lost, please connect to the network!');
         }
       }
+    },
+    resetForm(){
+      this.newInspection.title = "";
+      this.newInspection.date = "";
     },
     exportToCSV() {
       const csvContent = this.inspections.map((inspection) => ({

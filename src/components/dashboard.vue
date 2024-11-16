@@ -24,7 +24,7 @@ export default {
     return {
       status: "",
       utilizate: 80,
-      defectRate: 0,    
+      defectRate: "",    
     };
   },
   created() {
@@ -33,16 +33,22 @@ export default {
   methods:{
     async fetchData(){
       try{ 
+
         const response = await fetch('http://localhost:3000/getMetricsData');
+
         const data = await response.json();
 
-        this.status = data.status;
-        this.defectRate = Math.round(data.defectRate); 
+        if (data.error) {
+          alert(`Server error: ${data.error}`);
+          return; 
+        }
 
+        this.status = data.status || 'Unknown';
+        this.defectRate = data.defectRate ? Math.round(data.defectRate) : 0;
 
       }catch (error){
         console.error('Error fetching records:', error);
-        alert('Something went wrong. Please try again');
+        alert('The network connection is lost, please connect to the network!');
       }
     }
   },
