@@ -140,7 +140,7 @@ export default {
       }
     
       try{
-        const response = await fetch(`${this.apiUrl}/addInspection`, {
+        const response = await fetch(`${this.apiUrl}/api/qc/addInspection`, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ export default {
     },
     async fetchRecords() {
       try{
-        const response = await fetch(`${this.apiUrl}/getInspectionData`,{
+        const response = await fetch(`${this.apiUrl}/api/qc/getInspectionData`,{
             method: 'GET',
             headers: {
             'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ export default {
     },
     async changeStatus(id, status) {
       try{
-        const response = await fetch(`${this.apiUrl}/changeStatusData/${id}/${status}`, {
+        const response = await fetch(`${this.apiUrl}/api/qc/changeStatusData/${id}/${status}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
@@ -248,7 +248,7 @@ export default {
 
       if (getTotalProduced !== null && getTotalDefect !== null && getdescription !== null) {
         try{
-          const response = await fetch(`${this.apiUrl}/addDefectDesc/${id}`, {
+          const response = await fetch(`${this.apiUrl}/api/qc/addDefectDesc/${id}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json'
@@ -285,7 +285,7 @@ export default {
 
       if (confirmation){
         try{
-          const response = await fetch(`${this.apiUrl}/deleteRecord/${id}`, {
+          const response = await fetch(`${this.apiUrl}/api/qc/deleteRecord/${id}`, {
             method: 'DELETE',
             headers: {
               'Content-Type': 'application/json'

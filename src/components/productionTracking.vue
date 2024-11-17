@@ -214,7 +214,7 @@ export default {
     async fetchRecords() {
   
       try {
-        const response = await fetch(`${this.apiUrl}/getProductionRecords`, {
+        const response = await fetch(`${this.apiUrl}/api/production/getProductionRecords`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -271,8 +271,8 @@ export default {
       }
 
       const url = this.isEditing
-        ? `${this.apiUrl}/updateProductRecord/${this.editIndex}`
-        : `${this.apiUrl}/addProductRecord`;
+        ? `${this.apiUrl}/api/production/updateProductRecord/${this.editIndex}`
+        : `${this.apiUrl}/api/production/addProductRecord`;
 
       try {
         const response = await fetch(url, {
@@ -310,7 +310,7 @@ export default {
       const confirmation = confirm("Are you sure to delete the date?");
       if (confirmation) {
         try {
-          const response = await fetch(`${this.apiUrl}/deleteProductRecord/${id}`, {
+          const response = await fetch(`${this.apiUrl}/api/production/deleteProductRecord/${id}`, {
             method: 'DELETE',
 
           })

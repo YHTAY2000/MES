@@ -14,13 +14,19 @@
         <h3 class="font-semibold text-lg text-blue-800">Defect Rate</h3>
         <p class=" font-bold text-2xl text-red-600">{{ this.defectRate }}%</p>
       </div>
-    </div>
+    </div >
+    <Chart :utilizateRate="this.utilizate" :defect="this.defectRate"/>
   </div>
 </template>
 
 <script>
+import Chart from './chart.vue';
+
 
 export default {
+  components:{
+    Chart
+  },
     data() {
     return {
       status: "",
@@ -36,7 +42,7 @@ export default {
     async fetchData(){
       try{ 
 
-        const response = await fetch('http://localhost:3000/getMetricsData');
+        const response = await fetch('http://localhost:3000/api/dashboard/getMetricsData');
 
         const data = await response.json();
 
