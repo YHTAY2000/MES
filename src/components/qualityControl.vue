@@ -26,7 +26,7 @@
             'border-pink-500': isInvalidDate,
             'focus:outline-none': isInvalidDate,
           }"
-          class="border border-gray-300 p-2 text-gray-500	 rounded w-full md:w-100"
+          class="border border-gray-300 p-2 text-gray-500	 w-full md:w-100"
         />
         <p class="mt-2 text-pink-600 text-sm" :class="{'invisible':!isInvalidDate}">
           Please select the date.

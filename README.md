@@ -13,7 +13,7 @@ My Application is developed using Vue, tailwind css, express.js, socket.io and m
 
 1. Go to the server.js file, make sure your database setup is correct
 2. In the cors, change the localhost port to your current port.
-3. Then, install the package:
+3. Then, install the following package:
 Run npm install
 ```sh
 npm install
@@ -41,6 +41,11 @@ npm install express --save
 ```
 
 4. Run the project 
+```sh
+cd src
+node server.js 
+```
+
 ```sh
 npm run dev 
 ```
