@@ -1,14 +1,14 @@
 <template>
     <div>
         <div
-        v-if="showAlert"
         :class="[
           'fixed right-3 w-80 border-l-4 p-4',
+          isVisible ? 'block' : 'hidden', 
           showAlert ? 'animate-slideInFromLeft' : 'animate-slideOutToLeft',
-          type == 'success'? 'bg-green-400 text-green-800 border-green-600':'bg-orange-300'
+          type == 'success'? 'block text-green-900 bg-green-100 border border-green-500':'block bg-red-100 border border-red-400 text-red-700'
         ]"
       >
-      <p>{{ alertMessage }}</p>
+      <p>{{ this.alertMessage }}</p>
       </div>
      
     </div>
@@ -24,25 +24,22 @@
             type: Boolean,
             default: false
         },
+        alertMessage:{
+          type: String,
+        }
         
     },
     data(){
         return{
+          isVisible: false
         }
     },
-    computed: {
-        alertMessage() {
-            switch (this.type) {
-                case 'success':
-                return 'Data added successful!';
-                case 'error':
-                return 'Something went wrong!';
-                case 'info':
-                return 'Here is some information.';
-                default:
-                return '';
-            }
+    watch: {
+      showAlert(type){
+        if (type){
+          this.isVisible = true
         }
+      }
     },
     methods: {
       hideAlert() {

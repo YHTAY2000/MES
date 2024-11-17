@@ -138,7 +138,7 @@ app.delete('/deleteProductRecord/:id', (req, res) => {
 
         }
         io.emit('dataProductionUpdated');
-        res.status(200).json({ message: 'Record added successfully' });
+        res.status(200).json({ message: 'Record deleted successfully' });
     });
 });
 ///////////////////

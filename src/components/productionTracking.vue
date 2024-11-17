@@ -1,12 +1,12 @@
 <template>
   <div class="flex-1 p-4 md:p-6 lg:p-8">
-    <Alert :showAlert="alertDisplay" :type="status"/>
+    <Alert :showAlert="alertDisplay" :type="alsertStatus" :alertMessage="message"/>
     <h2 class="text-gray-700 text-2xl mb-6 font-bold ">Production Tracking</h2>
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
       <h3 class="mb-4 font-semibold text-lg text-gray-800">{{this.title}}</h3>
       <form @submit.prevent="addRecord" class="text-gray-800">
-        <div class="grid grid-cols-2 md:grid-cols-2 gap-5">
-          <div class="flex flex-col"> 
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="flex flex-col "> 
             <input v-model="newRecord.pname" type="text" placeholder="Product Name"
             :class="[
               'border p-2 rounded-lg w-full text-gray-800', 
@@ -95,32 +95,34 @@
             placeholder="Search by Product Name..." />
         </div>
       </div>
-      <table v-if="filteredRecords.length > 0" class="w-full border-collapse">
-        <thead>
-          <tr class="bg-gray-100 text-gray-800 border">
-            <th class="">Product Name</th>
-            <th class="">Batch No</th>
-            <th class="">Status</th>
-            <th class="">Quantity</th>
-            <th class="">Date</th>
-            <th class="">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="text-gray-800 text-center">
-          <tr v-for="(record, index) in filteredRecords" :key="index">
-            <td class="border p-2">{{ record.product_name }}</td>
-            <td class="border p-2">{{ record.batch_number }}</td>
-            <td class="border p-2">{{ record.status }}</td>
-            <td class="border p-2">{{ record.quantity }}</td>
-            <td class="border p-2">{{ record.date }}</td>
-            <td class="border p-2">
-              <button @click="editRecord(index, record.id)" class="text-blue-500">Edit</button>
-              <button @click="deleteRecord(record.id)" class="text-red-500 ml-2">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-else class="text-gray-600">No production data.</p>
+      <div class="overflow-x-scroll md:overflow-hidden">
+        <table v-if="filteredRecords.length > 0" class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-100 text-gray-800 border">
+              <th class="">Product Name</th>
+              <th class="">Batch No</th>
+              <th class="">Status</th>
+              <th class="">Quantity</th>
+              <th class="">Date</th>
+              <th class="">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-800 text-center">
+            <tr v-for="(record, index) in filteredRecords" :key="index">
+              <td class="border p-2">{{ record.product_name }}</td>
+              <td class="border p-2">{{ record.batch_number }}</td>
+              <td class="border p-2">{{ record.status }}</td>
+              <td class="border p-2">{{ record.quantity }}</td>
+              <td class="border p-2">{{ record.date }}</td>
+              <td class="border p-2">
+                <button @click="editRecord(index, record.id)" class="text-blue-500">Edit</button>
+                <button @click="deleteRecord(record.id)" class="text-red-500 ml-2">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p v-else class="text-gray-600">No production data.</p>
+      </div>
     </div>
   </div>
 </template>
@@ -136,8 +138,9 @@ export default {
   data() {
     return {
       apiUrl: 'http://localhost:3000',
-      status: "success",
+      alsertStatus: "",
       alertDisplay: false,
+      message: "",
       title: "Add New Production Record",
       buttonName: "Add",
       productionRecords: [], 
@@ -221,8 +224,10 @@ export default {
 
         if (data.error) {
 
-          alert(`Server error: ${data.error}`);
-          return;
+            this.alertDisplay = true;
+            this.alsertStatus = "error";
+            this.message = data.error;
+            return;
 
         } else {
           this.productionRecords = data.map(record => ({
@@ -286,11 +291,15 @@ export default {
         const data = await response.json();
 
         if (data.error) {
-          alert(`Server error: ${data.error}`);
-          return;
+            this.alertDisplay = true;
+            this.alsertStatus = "error";
+            this.message = data.error;
+            return;
 
         } else {
           this.alertDisplay = true;
+          this.alsertStatus = "success";
+          this.message = data.message;
         }
       } catch (error) {
         console.error('Error fetching records:', error);
@@ -307,10 +316,14 @@ export default {
           })
           const data = await response.json();
           if (data.error){
-            alert(`Server error: ${data.error}`);
+            this.alertDisplay = true;
+            this.alsertStatus = "error";
+            this.message = data.error;
             return;
           }else {
-            alert(data.message);
+            this.alertDisplay = true;
+            this.alsertStatus = "success";
+            this.message = data.message;
           }
         } catch (error) {
           console.error('Error fetching records:', error);

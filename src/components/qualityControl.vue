@@ -1,8 +1,8 @@
 <template>
   <div class="p-4">
+    <Alert :showAlert="alertDisplay" :type="alsertStatus" :alertMessage="message"/>
     <h2 class="text-2xl font-bold text-gray-700 mb-6">Quality Control</h2>
-
-    <form @submit.prevent="addInspection" class="mb-6 flex md:flex-row gap-4">
+    <form @submit.prevent="addInspection" class="mb-6 flex flex-col justify-center w-80 md:flex-row md:w-full gap-4">
       <div class="flex flex-col w-full">
         <input
           v-model="newInspection.title"
@@ -39,7 +39,8 @@
     <button @click="exportToCSV" class="bg-blue-500 mt-2 mb-3 px-4 py-2  text-white  hover:bg-blue-600">
       Export to CSV
     </button>
-    
+    <div class="overflow-x-scroll md:overflow-hidden">
+
     <div v-if="inspections.length > 0">
       <table class="text-center bg-white text-gray-500 rounded">
         <thead>
@@ -72,19 +73,27 @@
       </table>
     </div>
     <p v-else class="text-gray-600">No inspections scheduled.</p>
+    </div>
   
   </div>
 </template>
 
 <script>
 import io from 'socket.io-client';
+import Alert from './alert.vue';
 
 export default {
+  components:{
+      Alert
+  },
   name: "QualityControl",
   data() {
     return {
       apiUrl: 'http://localhost:3000',
       inspections: [],
+      alsertStatus: "",
+      alertDisplay: false,
+      message: "",
       newInspection: {
         title: "",
         date: "",
@@ -112,6 +121,15 @@ export default {
 
     });
   },
+  watch:{
+    alertDisplay(type){
+      if (type){
+          setTimeout(() => {
+            this.alertDisplay = false
+          }, 5000);
+        }
+    }
+  },
   methods: {
     async addInspection() {
       this.isInvalidTitle = !this.newInspection.title.trim();
@@ -137,11 +155,14 @@ export default {
         const result = response.json()
         if (result.error) {
 
-          alert(`Server error: ${data.error}`);
+            this.alertDisplay = true;
+            this.alsertStatus = "error";
+            this.message = result.error;
           return;
         }else{
-          alert(result);
-          console.log(result);
+            this.alertDisplay = true;
+            this.alsertStatus = "success";
+            this.message = result.message;
 
         }
       }catch (error){
@@ -182,9 +203,15 @@ export default {
 
         const result = await response.json();
 
-        if (result){
-          alert(result.message);
-
+        if (result.error){
+          this.alertDisplay = true;
+            this.alsertStatus = "error";
+            this.message = result.error;
+            return;
+        }else{
+            this.alertDisplay = true;
+            this.alsertStatus = "success";
+            this.message = result.message;
         }
 
       } catch (error) {
@@ -236,10 +263,16 @@ export default {
 
           const result = await response.json();
 
-          if (result){
-            alert(result.message);
-
-          }
+          if (result.error){
+          this.alertDisplay = true;
+            this.alsertStatus = "error";
+            this.message = result.error;
+            return;
+        }else{
+            this.alertDisplay = true;
+            this.alsertStatus = "success";
+            this.message = result.message;
+        }
       
         } catch (error) {
           console.error('Error fetching records:', error);
@@ -261,10 +294,16 @@ export default {
 
           const result = await response.json();
 
-          if (result){
-            alert(result.message);
-
-          }
+          if (result.error){
+          this.alertDisplay = true;
+            this.alsertStatus = "error";
+            this.message = result.error;
+            return;
+        }else{
+            this.alertDisplay = true;
+            this.alsertStatus = "success";
+            this.message = result.message;
+        }
 
         } catch (error) {
           console.error('Error fetching records:', error);
