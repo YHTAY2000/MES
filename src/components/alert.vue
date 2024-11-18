@@ -1,16 +1,18 @@
 <template>
-    <div>
-        <div
+    <div>  
+      <Transition>
+      <div v-if="showAlert"
         :class="[
           'fixed right-3 w-80 border-l-4 p-4',
           isVisible ? 'block' : 'hidden', 
-          showAlert ? 'animate-slideInFromLeft' : 'animate-slideOutToLeft',
-          type == 'success'? 'block text-green-900 bg-green-100 border border-green-500':'block bg-red-100 border border-red-400 text-red-700'
+          type === 'success' 
+            ? 'block text-green-900 bg-green-100 border border-green-500' 
+            : 'block bg-red-100 border border-red-400 text-red-700'
         ]"
       >
-      <p>{{ this.alertMessage }}</p>
+      <p>{{ alertMessage }}</p>
       </div>
-     
+    </Transition>
     </div>
   </template>
   
@@ -37,19 +39,45 @@
     watch: {
       showAlert(type){
         if (type){
-          this.isVisible = true
+          this.isVisible = type
         }
       }
-    },
-    methods: {
-      hideAlert() {
-      this.showAlert = !this.showAlert; // Toggle visibility
-      },
     },
   };
   </script>
   
   <style scoped>
-  /* Scoped styling (if needed) */
+
+  @keyframes slideInFromLeft {
+      0% {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOutToLeft {
+      0% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+
+    .v-enter-active {
+      animation: slideInFromLeft 0.5s ease-out;
+    }
+
+    .v-leave-active {
+      animation: slideOutToLeft 0.5s ease-in;
+    }
+  
+
   </style>
   

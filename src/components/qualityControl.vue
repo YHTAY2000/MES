@@ -162,7 +162,7 @@ export default {
         }else{
             this.alertDisplay = true;
             this.alsertStatus = "success";
-            this.message = result.message;
+            this.message = "Data Added Successfully";
 
         }
       }catch (error){

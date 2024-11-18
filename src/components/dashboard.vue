@@ -31,7 +31,7 @@ export default {
     return {
       status: "",
       utilizate: 80,
-      defectRate: "",    
+      defectRate: null,    
     };
   },
   

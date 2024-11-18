@@ -1,7 +1,7 @@
 <template>
    <div class="flex border-4 border-blue-300 bg-blue-200 mt-10 justify-center items-center">
     <div class="w-96 h-96">
-        <Pie :data="data" :options="options" />
+        <Pie ref="pieChart" :data="data" :options="options" />
     </div>
   </div>
 </template>
@@ -12,19 +12,20 @@
 
   ChartJS.register(ArcElement, Tooltip, Legend);
   
-  export default {
-    name: 'App',
+  export default { 
+    name: 'App', 
     components: {
       Pie
     },
     props:{
         utilizateRate:{
-            type: String
+            type: Number
         },
         defect:{
-            type:String
+            type:Number
         },
-        
+    },
+    mounted(){
     },
     data() {
       return {
@@ -32,7 +33,7 @@
           labels: ['Machine Utilization', 'Defect Rate'],
           datasets: [
             {
-            data: [parseFloat(this.utilizateRate), parseFloat(this.defect)],
+            data: [this.utilizateRate, this.defect],
               backgroundColor: [
                 'rgb(255, 99, 132)',
                 'rgb(54, 162, 235)',

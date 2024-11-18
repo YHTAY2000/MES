@@ -21,8 +21,8 @@ export default {
         },
       },
       animation: {
-        slideInFromLeft: 'slideInFromLeft 0.5s ease-out forwards',
-        slideOutToLeft: 'slideOutToLeft 0.5s ease-in forwards',
+        slideInFromLeft: 'slideInFromLeft 0.5s ease-out',
+        slideOutToLeft: 'slideOutToLeft 0.5s ease-in',
       },
     },
   },
